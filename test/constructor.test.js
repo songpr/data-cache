@@ -54,3 +54,11 @@ test("check maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () =>
         new (require("../index"))(fn, { max: (new Date()) });
     }).toThrow("Invalid max");
 })
+
+test("list options", () => {
+    const fn = () => { };
+    const dataCache = new (require("../index"))(fn);
+    const options = Object.keys(dataCache);
+    expect(options.length).toEqual(5);
+    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "fetchMissCache", "max"]))
+})

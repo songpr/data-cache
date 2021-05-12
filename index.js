@@ -30,6 +30,12 @@ class DataCache {
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
         Object.defineProperty(this, "fetchMissCache", { get: () => fetchMissCache, configurable: false, enumerable: true });
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
+        const _map = new Map();
+        Object.defineProperty(this, "_map", { get: () => _map, configurable: false, enumerable: false });
+    }
+
+    async init() {
+
     }
     /**
      * get cache item by key, return undefined if not found.
