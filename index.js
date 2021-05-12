@@ -1,3 +1,14 @@
+const util = require('util');
+
+function timeoutLoop(asyncRefresh, time) {
+    setTimeout(function () {
+        asyncRefresh().then(() => {
+            //if pass then timeoutLoop for the next refresh
+            timeoutLoop(asyncRefresh, time);
+        }).catch(err => { console.log(err.stack) });
+
+    }, time);
+}
 /**
  * Data cache that do not have set method, fetch cached via fetch function 
  */
@@ -15,6 +26,8 @@ class DataCache {
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, fetchMissCache: false, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
         Object.defineProperty(this, "_fetch", { value: fetch, configurable: false, enumerable: false });
+        const _isAsyncFetch = util.types.isAsyncFunction(fetch);
+        Object.defineProperty(this, "_isAsyncFetch", { get: () => _isAsyncFetch, configurable: false, enumerable: false });
         const maxAge = options.maxAge || 600;
         if (!Number.isInteger(maxAge)) throw new Error("Invalid maxAge");
         const refreshAge = options.refreshAge || maxAge;
@@ -30,12 +43,30 @@ class DataCache {
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
         Object.defineProperty(this, "fetchMissCache", { get: () => fetchMissCache, configurable: false, enumerable: true });
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
-        const _map = new Map();
-        Object.defineProperty(this, "_map", { get: () => _map, configurable: false, enumerable: false });
+        const _lruCache = new (require("lru-cache"))({ max, maxAge: maxAge * 1000 })
+        Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
+        Object.defineProperty(this, "size", { get: () => _lruCache.itemCount, configurable: false, enumerable: true });
+        Object.freeze(this);// freeze this instance and prevent change
     }
 
     async init() {
+        const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+        if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
+        for (const [key, value] of data) {
+            this._cache.set(key, value);
+        }
+        const asyncRefresh = async () => {
+            const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+            console.log("refresh data", data);
+            if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
+            for (const [key, value] of data) {
+                this._cache.set(key, value);
+            }
+        }
 
+        //run every
+        const this_timeoutLoop = timeoutLoop.bind(this);
+        this_timeoutLoop(asyncRefresh, this.refreshAge * 1000);
     }
     /**
      * get cache item by key, return undefined if not found.
@@ -45,7 +76,7 @@ class DataCache {
      * @returns 
      */
     get(key) {
-        return undefined;
+        return this._cache.get(key);
     }
 
     /**
@@ -55,6 +86,7 @@ class DataCache {
     async getOrFetch(key) {
         return undefined;
     }
+
 }
 
 module.exports = DataCache;

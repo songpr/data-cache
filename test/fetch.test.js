@@ -1,58 +1,68 @@
 const { expect } = require("@jest/globals");
+const delay = require("delay");
 
-test("fetch only", () => {
-    expect(() => {
-        new (require("../index"))();
-    }).toThrow("fetch must be function/async function");
-    const fn = () => { };
-    const dataCache = new (require("../index"))(fn);
-    expect(dataCache._fetch).toBe(fn);
-})
-/**
-    maxAge - seconds before cache are expired and return undefined, default = 600s,
-    refreshAge - seconds before fetch new values, default = maxAge,
-    resetOnRefresh - true reset all cached data and replace with the new fetched data, false replace values with same keys from the new fetched data, default = true,
-    fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. default = false.
-    max - max of cache items, default = 10000.
-*/
-test("maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
-    const fn = () => { };
-    const dataCache = new (require("../index"))(fn);
-    expect(dataCache.maxAge).toBe(600);
-    expect(dataCache.refreshAge).toBe(600);
-    expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
-    expect(dataCache.max).toBe(10000);
-    dataCache.maxAge = 10000;
-    dataCache.refreshAge = 10000;
-    dataCache.resetOnRefresh = false;
-    dataCache.fetchMissCache = true;
-    dataCache.max = 20000;
-    //options can not change after instantiated
-    expect(dataCache.maxAge).toBe(600);
-    expect(dataCache.refreshAge).toBe(600);
-    expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
-    expect(dataCache.max).toBe(10000);
+test("fetch only", async (done) => {
+    const fn = () => Object.entries({ a: 1, b: 2, c: 3 });
+    const cache = new (require("../index"))(fn);
+    await cache.init();
+    expect(cache.get("a")).toEqual(1);
+    expect(cache.get("b")).toEqual(2);
+    expect(cache.get("c")).toEqual(3);
+    expect(cache.get("d")).toEqual(undefined);
+    expect(cache.get("ee")).toEqual(undefined);
+    expect(cache.size).toEqual(3);
+    done();
 })
 
-test("check maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
-    const fn = () => { };
-    const dataCache = new (require("../index"))(fn);
-    expect(dataCache.maxAge).toBe(600);
-    expect(dataCache.refreshAge).toBe(600);
-    expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
-    expect(dataCache.max).toBe(10000);
-    dataCache.maxAge = 10000;
-    dataCache.refreshAge = 10000;
-    dataCache.resetOnRefresh = false;
-    dataCache.fetchMissCache = true;
-    dataCache.max = 20000;
-    //options can not change after instantiated
-    expect(dataCache.maxAge).toBe(600);
-    expect(dataCache.refreshAge).toBe(600);
-    expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
-    expect(dataCache.max).toBe(10000);
+test("fetch refresh cache every 1 sec", async (done) => {
+    let round = 1;
+    const fn = () => {
+        const entires = Object.entries({ a: 1 * round, b: 2 * round, c: 3 * round })
+        round++
+        return entires;
+    };
+    const cache = new (require("../index"))(fn, { maxAge: 1 });
+    await cache.init()
+    //loop 3 round
+    for (let i = 1; i <= 3; i++) {
+        console.log("i", i, "round", round)
+        expect(cache.get("a")).toEqual(1 * i);
+        expect(cache.get("b")).toEqual(2 * i);
+        expect(cache.get("c")).toEqual(3 * i);
+        expect(cache.get("d")).toEqual(undefined);
+        expect(cache.get("ee")).toEqual(undefined);
+        expect(cache.size).toEqual(3);
+        await delay(1000);
+    }
+    done();
+})
+
+test("maxAge expired, maxAge < refreshAge", async (done) => {
+    let round = 1;
+    const fn = () => {
+        const entires = Object.entries({ a: 1 * round, b: 2 * round, c: 3 * round })
+        round++
+        return entires;
+    };
+    const cache = new (require("../index"))(fn, { maxAge: 1, refreshAge: 2 });
+    await cache.init()
+    expect(cache.get("a")).toEqual(1);
+    expect(cache.get("b")).toEqual(2);
+    expect(cache.get("c")).toEqual(3);
+    expect(cache.get("d")).toEqual(undefined);
+    expect(cache.get("ee")).toEqual(undefined);
+    expect(cache.size).toEqual(3);
+    await delay(1100);
+    //all items expired now
+    expect(cache.size).toEqual(3);//expired but not get it so size not change
+    expect(cache.get("a")).toEqual(undefined);
+    expect(cache.get("b")).toEqual(undefined);
+    expect(cache.get("c")).toEqual(undefined);
+    expect(cache.size).toEqual(0);//0 because we just get the expired item, so it removed
+    await delay(1000);
+    //all items refresh now
+    expect(cache.get("a")).toEqual(2);
+    expect(cache.get("b")).toEqual(4);
+    expect(cache.get("c")).toEqual(6);
+    done();
 })
