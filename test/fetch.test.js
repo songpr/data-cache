@@ -66,3 +66,85 @@ test("maxAge expired, maxAge < refreshAge", async (done) => {
     expect(cache.get("c")).toEqual(6);
     done();
 })
+
+test("maxAge expired, maxAge > refreshAge", async (done) => {
+    let round = 1;
+    const fn = () => {
+        const obj = {};
+        obj[`a_${round}`] = 1 * round;
+        obj[`b_${round}`] = 2 * round;
+        obj[`c_${round}`] = 3 * round;
+        const entires = Object.entries(obj)
+        round++
+        return entires;
+    };
+    const cache = new (require("../index"))(fn, { maxAge: 2, refreshAge: 1 });
+    await cache.init()
+    expect(cache.get("a_1")).toEqual(1);
+    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.get("c_1")).toEqual(3);
+    expect(cache.get("d")).toEqual(undefined);
+    expect(cache.get("ee")).toEqual(undefined);
+    expect(cache.size).toEqual(3);
+    await delay(1100);
+    //all items refresh now
+    //default resetOnRefresh = true, so remove old items
+    expect(cache.size).toEqual(3);//new items
+    expect(cache.get("a_1")).toEqual(undefined);
+    expect(cache.get("b_1")).toEqual(undefined);
+    expect(cache.get("c_1")).toEqual(undefined);
+    expect(cache.get("a_2")).toEqual(2);
+    expect(cache.get("b_2")).toEqual(4);
+    expect(cache.get("c_2")).toEqual(6);
+    expect(cache.size).toEqual(3);
+    await delay(1000);
+    //all items refresh now
+    expect(cache.size).toEqual(3);//new items only
+    expect(cache.get("a_3")).toEqual(3);
+    expect(cache.get("b_3")).toEqual(6);
+    expect(cache.get("c_3")).toEqual(9);
+    done();
+})
+
+test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done) => {
+    let round = 1;
+    const fn = () => {
+        const obj = {};
+        obj[`a_${round}`] = 1 * round;
+        obj[`b_${round}`] = 2 * round;
+        obj[`c_${round}`] = 3 * round;
+        const entires = Object.entries(obj)
+        round++
+        return entires;
+    };
+    const cache = new (require("../index"))(fn, { maxAge: 2, refreshAge: 1, resetOnRefresh: false });
+    await cache.init()
+    expect(cache.get("a_1")).toEqual(1);
+    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.get("c_1")).toEqual(3);
+    expect(cache.get("d")).toEqual(undefined);
+    expect(cache.get("ee")).toEqual(undefined);
+    expect(cache.size).toEqual(3);
+    await delay(1100);
+    //all items refresh now
+    //default resetOnRefresh = false, so last items are exist
+    expect(cache.size).toEqual(6);//new items
+    expect(cache.get("a_1")).toEqual(1);
+    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.get("c_1")).toEqual(3);
+    expect(cache.get("a_2")).toEqual(2);
+    expect(cache.get("b_2")).toEqual(4);
+    expect(cache.get("c_2")).toEqual(6);
+    await delay(1000);
+    //new refresh
+    //first round item expired now
+    expect(cache.size).toEqual(9);//9 because we not get expired items yet, so have 3 round of items
+    expect(cache.get("a_1")).toEqual(undefined);
+    expect(cache.get("b_1")).toEqual(undefined);
+    expect(cache.get("c_1")).toEqual(undefined);
+    expect(cache.size).toEqual(6);//6 because expired items removed
+    expect(cache.get("a_3")).toEqual(3);
+    expect(cache.get("b_3")).toEqual(6);
+    expect(cache.get("c_3")).toEqual(9);
+    done();
+})

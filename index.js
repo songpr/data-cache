@@ -58,6 +58,9 @@ class DataCache {
         const asyncRefresh = async () => {
             const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
             console.log("refresh data", data);
+            if (this.resetOnRefresh == true) {
+                this._cache.reset();//reset on each refresh
+            }
             if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
             for (const [key, value] of data) {
                 this._cache.set(key, value);
