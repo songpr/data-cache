@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "lru-cache": "^6.0.0"
+  },
+  "name": "data-cache",
+  "description": "caching data with LRU Cache and refresh it within specified time",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/songpr/data-cache.git"
+  },
+  "keywords": [
+    "cache"
+  ],
+  "author": "Pornchai R. <songpr@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/songpr/data-cache/issues"
+  },
+  "homepage": "https://github.com/songpr/data-cache#readme",
+  "devDependencies": {
+    "got": "^11.8.2",
+    "jest": "^26.6.3"
+  }
+}
