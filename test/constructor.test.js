@@ -28,12 +28,14 @@ test("maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
     dataCache.resetOnRefresh = false;
     dataCache.fetchMissCache = true;
     dataCache.max = 20000;
+    dataCache["sss"] = 22;
     //options can not change after instantiated
     expect(dataCache.maxAge).toBe(600);
     expect(dataCache.refreshAge).toBe(600);
     expect(dataCache.resetOnRefresh).toBe(true);
     expect(dataCache.fetchMissCache).toBe(false);
     expect(dataCache.max).toBe(10000);
+    expect(dataCache.sss).toBe(undefined);
 })
 
 test("check maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
@@ -59,6 +61,6 @@ test("list options", () => {
     const fn = () => { };
     const dataCache = new (require("../index"))(fn);
     const options = Object.keys(dataCache);
-    expect(options.length).toEqual(5);
-    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "fetchMissCache", "max"]))
+    expect(options.length).toEqual(6);
+    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "fetchMissCache", "max", "size"]))
 })
