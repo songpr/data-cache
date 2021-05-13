@@ -11,7 +11,7 @@ class DataCache {
      *                              maxAge - seconds before cache are expired and return undefined, default = 600s,
      *                              refreshAge - seconds before fetch new values, default = maxAge,
      *                              resetOnRefresh - true reset all cached data and replace with the new fetched data, false replace values with same keys from the new fetched data, default = true,
-     *                              fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. default = false.
+     *                              fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. always = false - Not implemented yet.
      *                              max - max of cache items, default = 10000.
      */
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, fetchMissCache: false, max: 10000 }) {
@@ -32,7 +32,7 @@ class DataCache {
         Object.defineProperty(this, "maxAge", { get: () => maxAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "refreshAge", { get: () => refreshAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
-        Object.defineProperty(this, "fetchMissCache", { get: () => fetchMissCache, configurable: false, enumerable: true });
+        Object.defineProperty(this, "fetchMissCache", { get: () => false, configurable: false, enumerable: true });//always false. TODO
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
         const _lruCache = new (require("lru-cache"))({ max: max, maxAge: maxAge * 1000 })
         Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
@@ -68,8 +68,10 @@ class DataCache {
                 this._cache.reset();//reset on each refresh
             }
             if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
+            this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
+            let i = 0;
             for (const [key, value] of data) {
-                if (this.size >= this.max) break;
+                if ((++i) > this.max) break; // add items do not exceed max
                 this._cache.set(key, value);
             }
         }
@@ -86,14 +88,6 @@ class DataCache {
      */
     get(key) {
         return this._cache.get(key);
-    }
-
-    /**
-     * get cache item by key, or fetch the data using fetch(key), return undefined if not found.
-     * @param {get} key 
-     */
-    async getOrFetch(key) {
-        return undefined;
     }
 
     async close() {

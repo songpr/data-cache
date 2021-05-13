@@ -165,10 +165,10 @@ test("fetch size < max ,maxAge expired, maxAge > refreshAge, resetOnRefresh=true
     await cache.close();
     done();
 })
+//if max > size of new fetch, here are priority of cache -> new fetch > old fetch priority recently use > old fetch with no used > expired items.
 
-//new fetch more important than lru
-ntest("fetch size > max, maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done) => {
-    const max = 3;
+test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done) => {
+    const max = 10;
     let round = 1;
     const fn = () => {
         const obj = {};
@@ -180,35 +180,60 @@ ntest("fetch size > max, maxAge expired, maxAge > refreshAge, resetOnRefresh = f
         round++
         return entires;
     };
-    const cache = new (require("../index"))(fn, { max, maxAge: 2, refreshAge: 1, resetOnRefresh: false });
+    const cache = new (require("../index"))(fn, { max, maxAge: 3, refreshAge: 1, resetOnRefresh: false });
     await cache.init()
     expect(cache.get("a_1")).toEqual(1);
-    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.get("a_1")).toEqual(1);//a have been called twice
     expect(cache.get("c_1")).toEqual(3);
-    expect(cache.get("d_1")).toEqual(undefined);
+    expect(cache.get("d_1")).toEqual(4);
+
+    expect(cache.size).toEqual(4);//new items
     expect(cache.get("ee")).toEqual(undefined);
-    expect(cache.size).toEqual(max);
     await delay(1100);
-    //all items refresh now
+    //new 4 item, no old item have to be removed
     //default resetOnRefresh = false, so last items are exist
-    expect(cache.size).toEqual(6);//new items
-    expect(cache.get("a_1")).toEqual(1);
-    expect(cache.get("b_1")).toEqual(2);
-    expect(cache.get("c_1")).toEqual(3);
+    expect(cache.size).toEqual(8);//new items + old items
     expect(cache.get("a_2")).toEqual(2);
     expect(cache.get("b_2")).toEqual(4);
     expect(cache.get("c_2")).toEqual(6);
+    expect(cache.get("d_2")).toEqual(8);
+    expect(cache.get("b_1")).toEqual(2);
     await delay(1000);
-    //new refresh
-    //first round item expired now
-    expect(cache.size).toEqual(9);//9 because we not get expired items yet, so have 3 round of items
+    //new 4 item, 2 no old item have to be removed
+    expect(cache.size).toEqual(max);
     expect(cache.get("a_1")).toEqual(undefined);
-    expect(cache.get("b_1")).toEqual(undefined);
     expect(cache.get("c_1")).toEqual(undefined);
-    expect(cache.size).toEqual(6);//6 because expired items removed
+    expect(cache.get("a_2")).toEqual(2);
+    expect(cache.get("b_2")).toEqual(4);
+    expect(cache.get("c_2")).toEqual(6);
+    expect(cache.get("d_2")).toEqual(8);
     expect(cache.get("a_3")).toEqual(3);
     expect(cache.get("b_3")).toEqual(6);
     expect(cache.get("c_3")).toEqual(9);
+    //last 2 recent call of round 1
+    expect(cache.get("d_1")).toEqual(4);
+    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.size).toEqual(max);
+    await delay(1000);
+    //now first round is expired (even d_1,b_1 have recently call) and have 4 new fecth + 4*2 of round(2,3)
+    expect(cache.size).toEqual(max);
+    //priority of cache
+    expect(cache.get("a_4")).toEqual(4);
+    expect(cache.get("b_4")).toEqual(8);
+    expect(cache.get("c_4")).toEqual(12);
+    expect(cache.get("d_4")).toEqual(16);
+    //recency but not expried
+    expect(cache.get("b_2")).toEqual(4);
+    expect(cache.get("c_2")).toEqual(6);
+    expect(cache.get("d_2")).toEqual(8);
+    expect(cache.get("a_3")).toEqual(3);
+    expect(cache.get("b_3")).toEqual(6);
+    expect(cache.get("c_3")).toEqual(9);
+    //old fetch but not recently use
+    expect(cache.get("d_3")).toEqual(undefined);
+    //expired items
+    expect(cache.get("d_1")).toEqual(undefined);
+    expect(cache.get("b_1")).toEqual(undefined);
     await cache.close();
     done();
 });
