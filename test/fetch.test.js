@@ -17,6 +17,7 @@ test("fetch only", async (done) => {
 test("fetch refresh cache every 1 sec", async (done) => {
     let round = 1;
     const fn = () => {
+        console.log("test fetch", round)
         const entires = Object.entries({ a: 1 * round, b: 2 * round, c: 3 * round })
         round++
         return entires;
@@ -34,6 +35,8 @@ test("fetch refresh cache every 1 sec", async (done) => {
         expect(cache.size).toEqual(3);
         await delay(1000);
     }
+    console.log("test fetch close")
+    await cache.close();
     done();
 })
 
@@ -64,10 +67,11 @@ test("maxAge expired, maxAge < refreshAge", async (done) => {
     expect(cache.get("a")).toEqual(2);
     expect(cache.get("b")).toEqual(4);
     expect(cache.get("c")).toEqual(6);
+    await cache.close();
     done();
 })
 
-test("maxAge expired, maxAge > refreshAge", async (done) => {
+test("maxAge expired, maxAge > refreshAge, resetOnRefresh=true", async (done) => {
     let round = 1;
     const fn = () => {
         const obj = {};
@@ -103,6 +107,7 @@ test("maxAge expired, maxAge > refreshAge", async (done) => {
     expect(cache.get("a_3")).toEqual(3);
     expect(cache.get("b_3")).toEqual(6);
     expect(cache.get("c_3")).toEqual(9);
+    await cache.close();
     done();
 })
 
@@ -146,5 +151,6 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done)
     expect(cache.get("a_3")).toEqual(3);
     expect(cache.get("b_3")).toEqual(6);
     expect(cache.get("c_3")).toEqual(9);
+    await cache.close();
     done();
 })

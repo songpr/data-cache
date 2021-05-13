@@ -1,14 +1,5 @@
 const util = require('util');
 
-function timeoutLoop(asyncRefresh, time) {
-    setTimeout(function () {
-        asyncRefresh().then(() => {
-            //if pass then timeoutLoop for the next refresh
-            timeoutLoop(asyncRefresh, time);
-        }).catch(err => { console.log(err.stack) });
-
-    }, time);
-}
 /**
  * Data cache that do not have set method, fetch cached via fetch function 
  */
@@ -46,7 +37,22 @@ class DataCache {
         const _lruCache = new (require("lru-cache"))({ max, maxAge: maxAge * 1000 })
         Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
         Object.defineProperty(this, "size", { get: () => _lruCache.itemCount, configurable: false, enumerable: true });
-        Object.freeze(this);// freeze this instance and prevent change
+        const dataCache = this;
+        Object.defineProperty(this, "_timeoutLoop", {
+            value: (asyncRefresh, time) => {
+                setTimeout(function () {
+                    asyncRefresh().then(() => {
+                        //if pass then timeoutLoop for the next refresh
+                        if (dataCache.isClose === true) {
+                            return;
+                        }
+                        //cache is not close then set timeout loop again
+                        dataCache._timeoutLoop(asyncRefresh, time);
+                    }).catch(err => { console.log(err.stack) });
+                }, time)
+            }
+            , configurable: false, enumerable: false
+        });
     }
 
     async init() {
@@ -57,7 +63,6 @@ class DataCache {
         }
         const asyncRefresh = async () => {
             const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
-            console.log("refresh data", data);
             if (this.resetOnRefresh == true) {
                 this._cache.reset();//reset on each refresh
             }
@@ -66,11 +71,10 @@ class DataCache {
                 this._cache.set(key, value);
             }
         }
-
-        //run every
-        const this_timeoutLoop = timeoutLoop.bind(this);
-        this_timeoutLoop(asyncRefresh, this.refreshAge * 1000);
+        this._timeoutLoop(asyncRefresh, this.refreshAge * 1000);
     }
+
+
     /**
      * get cache item by key, return undefined if not found.
      * 
@@ -88,6 +92,13 @@ class DataCache {
      */
     async getOrFetch(key) {
         return undefined;
+    }
+
+    async close() {
+        if (this.isClose === true) return;//already close
+        const close = true;
+        Object.defineProperty(this, "isClose", { get: () => close, configurable: false, enumerable: true });
+        this._cache.reset();
     }
 
 }
