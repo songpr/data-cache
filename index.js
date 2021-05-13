@@ -16,7 +16,7 @@ class DataCache {
      */
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, fetchMissCache: false, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
-        Object.defineProperty(this, "_fetch", { value: fetch, configurable: false, enumerable: false });
+        Object.defineProperty(this, "_fetch", { value: fetch, configurable: false, enumerable: false, writable: false });
         const _isAsyncFetch = util.types.isAsyncFunction(fetch);
         Object.defineProperty(this, "_isAsyncFetch", { get: () => _isAsyncFetch, configurable: false, enumerable: false });
         const maxAge = options.maxAge || 600;
@@ -48,10 +48,23 @@ class DataCache {
                         }
                         //cache is not close then set timeout loop again
                         dataCache._timeoutLoop(asyncRefresh, time);
-                    }).catch(err => { console.log(err.stack) });
+                    }).catch(err => {
+                        try {
+                            console.error("error when refrech cache")
+                            console.error(err.stack)
+                            if (dataCache.isClose === true) {
+                                return;
+                            }
+                            //cache is not close then set timeout loop again
+                            dataCache._timeoutLoop(asyncRefresh, time);
+                        } catch (unexpectedError) {
+                            //do nothing
+                            console.error("unexpected error in set refresh time after error")
+                        }
+                    });
                 }, time)
             }
-            , configurable: false, enumerable: false
+            , configurable: false, enumerable: false, writable: false
         });
     }
 
