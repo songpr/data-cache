@@ -69,25 +69,48 @@ class DataCache {
     }
 
     async init() {
-        const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
-        if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
-        for (const [key, value] of data) {
-            if (this.size >= this.max) break;
-            this._cache.set(key, value);
+
+        if (this._isAsyncFetch) {
+            const data = await this._fetch();
+            if (!(Symbol.iterator in Object(data)) && !util.types.isGeneratorObject(data)) throw new Error("fetch return non iterable data");
+            for await (const [key, value] of data) {
+                if (this.size >= this.max) break;
+                this._cache.set(key, value);
+            }
+        } else {
+            const data = this._fetch();
+            if (!(Symbol.iterator in Object(data)) && !util.types.isGeneratorObject(data)) throw new Error("fetch return non iterable data");
+            for (const [key, value] of data) {
+                if (this.size >= this.max) break;
+                this._cache.set(key, value);
+            }
         }
-        const asyncRefresh = async () => {
-            const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+        const asyncRefresh = this._isAsyncFetch ? async () => {
+            const data = await this._fetch();
             if (this.resetOnRefresh == true) {
                 this._cache.reset();//reset on each refresh
             }
-            if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
+            if (!(Symbol.iterator in Object(data)) && !util.types.isGeneratorObject(data)) throw new Error("fetch return non iterable data");
+            this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
+            let i = 0;
+            //async iterator
+            for await (const [key, value] of data) {
+                if ((++i) > this.max) break; // add items do not exceed max
+                this._cache.set(key, value);
+            }
+        } : async () => {
+            const data = this._fetch();
+            if (this.resetOnRefresh == true) {
+                this._cache.reset();//reset on each refresh
+            }
+            if (!(Symbol.iterator in Object(data)) && !util.types.isGeneratorObject(data)) throw new Error("fetch return non iterable data");
             this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
             let i = 0;
             for (const [key, value] of data) {
                 if ((++i) > this.max) break; // add items do not exceed max
                 this._cache.set(key, value);
             }
-        }
+        };
         this._timeoutLoop(asyncRefresh, this.refreshAge * 1000);
     }
 
