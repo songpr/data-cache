@@ -217,6 +217,9 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
     await delay(1000);
     //now first round is expired (even d_1,b_1 have recently call) and have 4 new fecth + 4*2 of round(2,3)
     expect(cache.size).toEqual(max);
+    //expired items
+    expect(cache.get("d_1")).toEqual(undefined);
+    expect(cache.get("b_1")).toEqual(undefined);
     //priority of cache
     expect(cache.get("a_4")).toEqual(4);
     expect(cache.get("b_4")).toEqual(8);
@@ -231,9 +234,7 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
     expect(cache.get("c_3")).toEqual(9);
     //old fetch but not recently use
     expect(cache.get("d_3")).toEqual(undefined);
-    //expired items
-    expect(cache.get("d_1")).toEqual(undefined);
-    expect(cache.get("b_1")).toEqual(undefined);
+
     await cache.close();
     done();
 });
