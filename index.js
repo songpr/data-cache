@@ -8,11 +8,11 @@ class DataCache {
      * 
      * @param {Function} fetch - function/async function to fetch all data and return as array of [key,value]/ a Iterator object that contains the [key, value] pairs 
      * @param {Object} options - options(maxAge, refreshAge ,resetOnRefresh = true,fetchMissCache,max)
-     *                              maxAge - seconds before cache are expired and return undefined, default = 600s,
-     *                              refreshAge - seconds before fetch new values, default = maxAge,
-     *                              resetOnRefresh - true reset all cached data and replace with the new fetched data, false replace values with same keys from the new fetched data, default = true,
+     *                              max - The maximum size of the cache. Setting it to 0 then no data will be cached; default is 10000,
+     *                              maxAge - Maximum age in second. Expired items will be removed every refreshAge; default is 600 seconds
+     *                              refreshAge - refresh time in second. New data will be fetch on each refresh and expired items will be removed every refreshAge; default is maxAge,
+     *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
      *                              fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. always = false - Not implemented yet.
-     *                              max - max of cache items, default = 10000.
      */
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, fetchMissCache: false, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
