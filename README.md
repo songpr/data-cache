@@ -22,6 +22,7 @@ const fetch = ()=>Object.entries({ a: 1, b: 2, c: 3 });
 const cache = new Cache(fetch,options);
 await cache.init()
 cache.get("a") // 1
+await cache.close() //clear cache and stop refresh
 
 ```
 ## Cache constructor
