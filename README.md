@@ -53,6 +53,8 @@ Therefore items must be sorted by its prority, which the most important one is t
 
 * `async init()`
     Call this function to init cache with the data from fetch function and start the refresh cycle.
+    
+    This function will throw exception if fetch throw exception
 
 * `get(key) => value`
 
@@ -61,6 +63,12 @@ Therefore items must be sorted by its prority, which the most important one is t
     This will update the "recently used"-ness of the key.
 
     The key and val can be any type. But using object as key have to same object.
+
+* `has(key) => boolean`
+
+    check the key is in cached. if the key is cached then return true
+    
+    This will not update the "recently used"-ness of the key, and not remove the expired key.
 
 * `async close()`
 

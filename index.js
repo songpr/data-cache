@@ -95,6 +95,8 @@ class DataCache {
     /**
      * get cache item by key, return undefined if not found.
      * 
+     * This method will update recently used.
+     * 
      * if fetchMissCache == true , this will fetch the missing cache by the key and cache it. 
      * @param {*} key 
      * @returns 
@@ -103,6 +105,14 @@ class DataCache {
         return this._cache.get(key);
     }
 
+    /**
+     * check key is cached, without update recently used
+     * @param {*} key 
+     * @returns 
+     */
+    has(key) {
+        return this._cache.has(key);
+    }
     async close() {
         if (this.isClose === true) return;//already close
         const close = true;

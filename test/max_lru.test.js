@@ -210,6 +210,7 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
     expect(cache.get("a_3")).toEqual(3);
     expect(cache.get("b_3")).toEqual(6);
     expect(cache.get("c_3")).toEqual(9);
+    expect(cache.has("d_3")).toBe(true);
     //last 2 recent call of round 1
     expect(cache.get("d_1")).toEqual(4);
     expect(cache.get("b_1")).toEqual(2);
