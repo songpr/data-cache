@@ -1,14 +1,14 @@
 {
   "name": "refreshed-cache",
   "description": "caching data with LRU Cache and refresh it within specified time",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/songpr/data-cache.git"
+    "url": "git+https://github.com/songpr/refreshed-cache.git"
   },
   "keywords": [
     "cache",
@@ -18,9 +18,9 @@
   "author": "Pornchai R. <songpr@gmail.com>",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/songpr/data-cache/issues"
+    "url": "https://github.com/songpr/refreshed-cache/issues"
   },
-  "homepage": "https://github.com/songpr/data-cache#readme",
+  "homepage": "https://github.com/songpr/refreshed-cache#readme",
   "devDependencies": {
     "delay": "^5.0.0",
     "jest": "^26.6.3"
