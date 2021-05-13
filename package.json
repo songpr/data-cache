@@ -1,5 +1,5 @@
 {
-  "name": "data-cache",
+  "name": "refreshed-cache",
   "description": "caching data with LRU Cache and refresh it within specified time",
   "version": "1.0.0",
   "main": "index.js",
@@ -11,7 +11,9 @@
     "url": "git+https://github.com/songpr/data-cache.git"
   },
   "keywords": [
-    "cache"
+    "cache",
+    "refresh",
+    "lru-cache"
   ],
   "author": "Pornchai R. <songpr@gmail.com>",
   "license": "BSD-3-Clause",

@@ -1,4 +1,4 @@
-# data-cache
+# refreshed-cache
 caching data with LRU Cache and refresh it within specified time.
 
 ## Concept
@@ -8,13 +8,13 @@ APIs have been kept to be minimal, unless there are useful use cases.
 ## Installation:
 
 ```javascript
-npm install data-cache --save
+npm install refreshed-cache --save
 ```
 
 ## Usage:
 
 ```javascript
-const Cache = require("data-cache");
+const Cache = require("refreshed-cache");
 const options = { max: 500
               , maxAge: 1200
               , refreshAge : 600 };
