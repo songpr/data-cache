@@ -34,7 +34,7 @@ class DataCache {
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
         Object.defineProperty(this, "fetchMissCache", { get: () => fetchMissCache, configurable: false, enumerable: true });
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
-        const _lruCache = new (require("lru-cache"))({ max, maxAge: maxAge * 1000 })
+        const _lruCache = new (require("lru-cache"))({ max: max, maxAge: maxAge * 1000 })
         Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
         Object.defineProperty(this, "size", { get: () => _lruCache.itemCount, configurable: false, enumerable: true });
         const dataCache = this;
@@ -59,6 +59,7 @@ class DataCache {
         const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
         if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
         for (const [key, value] of data) {
+            if (this.size >= this.max) break;
             this._cache.set(key, value);
         }
         const asyncRefresh = async () => {
@@ -68,6 +69,7 @@ class DataCache {
             }
             if (!(Symbol.iterator in Object(data))) throw new Error("fetch return non iterable data");
             for (const [key, value] of data) {
+                if (this.size >= this.max) break;
                 this._cache.set(key, value);
             }
         }
