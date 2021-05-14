@@ -83,17 +83,15 @@ Therefore items must be sorted by its prority, which the most important one is t
 ```javascript
 const fs = require('fs');
 const parse = require('csv-parse');
-const stream = require('stream')
-const util = require('util');
-const pipeline = util.promisify(stream.pipeline);
 
 async function* readCSVByLine() {
     const readFileStream = fs.createReadStream(__dirname + "/keyword.csv");
     const csvParser = parse({});
-    await pipeline(readFileStream, csvParser);
+    readFileStream.pipe(csvParser)
     for await (const record of csvParser) {
         yield record;
     }
+    await readFileStream.destroy();//detroy unused readstream
 }
 const cache = new (require("refreshed-cache"))(readCSVByLine);
 await cache.init();
@@ -102,3 +100,28 @@ await cache.close();
 ```
 The code above will read content from CSV to cache, the first column will be keys and the second column will be values.
 The cache will be refresh with update content of CSV file every 600 second (default)
+## Read 4 lines from large CSV to cache
+
+This example is read only first 4 lines from large csv since max cache is only 4
+
+```javascript
+const fs = require('fs');
+const parse = require('csv-parse');
+
+async function* readCSV4Lines() {
+    const readFileStream = fs.createReadStream(__dirname + "/large.csv");
+    const csvParser = parse({});
+    readFileStream.pipe(csvParser)
+    let i = 0;
+    for await (const record of csvParser) {
+        yield record;
+        i++;
+        if (i >= 4) break;
+    }
+    await readFileStream.destroy();
+}
+const cache = new (require("refreshed-cache"))(readCSV4Lines,{max:4});
+await cache.init();
+cache.get("aa");//
+await cache.close();
+```

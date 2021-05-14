@@ -1,14 +1,11 @@
 //see https://alanstorm.com/async-generators-and-async-iteration-in-node-js/
 const fs = require('fs');
 const parse = require('csv-parse');
-const stream = require('stream')
-const util = require('util');
-const pipeline = util.promisify(stream.pipeline);
 
 async function* readCSVByLine() {
     const readFileStream = fs.createReadStream(__dirname + "/keyword.csv");
     const csvParser = parse({});
-    await pipeline(readFileStream, csvParser);
+    readFileStream.pipe(csvParser);
     for await (const record of csvParser) {
         yield record;
     }

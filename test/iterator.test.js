@@ -42,14 +42,11 @@ test("test with generator", async (done) => {
 
 const fs = require('fs');
 const parse = require('csv-parse');
-const stream = require('stream')
-const util = require('util');
-const pipeline = util.promisify(stream.pipeline);
 
 async function* readCSVByLine() {
     const readFileStream = fs.createReadStream(__dirname + "/iterator.csv");
     const csvParser = parse({});
-    await pipeline(readFileStream, csvParser);
+    readFileStream.pipe(csvParser);
     for await (const record of csvParser) {
         yield record;
     }
@@ -69,4 +66,65 @@ test("test with async generator, CSV stream to cache", async (done) => {
     expect(cache.size).toEqual(13);
     await cache.close();
     done();
-}, 10000)
+}, 5000)
+
+async function* readLargeCSVByLine() {
+    const readFileStream = fs.createReadStream(__dirname + "/1000000.csv");
+    const csvParser = parse({});
+    readFileStream.pipe(csvParser)
+    let i = 0;
+    for await (const record of csvParser) {
+        yield record;
+        i++
+        if (i == 10) break;
+    }
+    await readFileStream.destroy();
+}
+
+test("test with large CSV file, stream first 10 items to cache", async (done) => {
+    const cache = new (require("../index"))(readLargeCSVByLine, { max: 10, refreshAge: 1 });
+    await cache.init();
+    expect(cache.get("cpPG")).toEqual("MnelEaBbPP");
+    expect(cache.get("HClmlnlM")).toEqual("I");
+    expect(cache.get("IFOBOfEOpLcJKnH")).toEqual('PNaj');
+    expect(cache.get("PODlcGLLGlHH")).toEqual(undefined);//line 12
+    expect(cache.size).toEqual(10);
+    await delay(1100);//provide enough time to read from file
+    expect(cache.get("PODlcGLLGlHH")).toEqual(undefined);//line 12
+    expect(cache.get("NNIJipmjEmEih")).toEqual(undefined);//line 11
+    expect(cache.get("MoLgMdcco")).toEqual('bmbhPFmNMbIcoLlF');
+    expect(cache.get("magom")).toEqual('gEMo');
+    expect(cache.size).toEqual(10);
+    await cache.close();
+    done();
+}, 200000)
+
+
+async function* readCSV4Lines() {
+    const readFileStream = fs.createReadStream(__dirname + "/iterator.csv");
+    const csvParser = parse({});
+    readFileStream.pipe(csvParser)
+    let i = 0;
+    for await (const record of csvParser) {
+        yield record;
+        i++;
+        if (i == 4) break
+    }
+    await readFileStream.destroy();
+}
+
+test("test read 4 rows CSV stream to cache", async (done) => {
+    const cache = new (require("../index"))(readCSV4Lines, { refreshAge: 1 });
+    await cache.init();
+    expect(cache.get("bo")).toEqual("bo");
+    expect(cache.get("hey")).toEqual(undefined);//line 5
+    expect(cache.get("hi")).toEqual('hello world');
+    expect(cache.size).toEqual(4);
+    await delay(1100);//provide enough time to read from file
+    expect(cache.get("yo")).toEqual("yo");
+    expect(cache.get("hey")).toEqual(undefined);//line 5
+    expect(cache.get("bye")).toEqual('good bye');
+    expect(cache.size).toEqual(4);
+    await cache.close();
+    done();
+}, 5000)
