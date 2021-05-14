@@ -125,3 +125,29 @@ await cache.init();
 cache.get("aa");//
 await cache.close();
 ```
+
+## Read 10 lines from large CSV on web to cache
+```javascript
+var got = require('got');
+const parse = require('csv-parse');
+const max = 10;
+async function* readCSVMaxLinesOnWeb() {
+    const csvWebStream = got.stream("https://raw.githubusercontent.com/songpr/refreshed-cache/main/test/1000000.csv");
+    const csvParser = parse({});
+    csvWebStream.pipe(csvParser)
+    let i = 0;
+    for await (const record of csvParser) {
+        yield record;
+        i++;
+        if (i == max) break
+    }
+    await csvWebStream.destroy();
+}
+
+const cache = new (require("refreshed-cache"))(readCSV10LinesOnWeb,{max});
+await cache.init();
+console.log(cache.get("cpPG"))//"MnelEaBbPP"
+console.log(cache.get("HClmlnlM"))//"I"
+console.log(cache.get("IFOBOfEOpLcJKnH"))//'PNaj'
+await cache.close();
+```
