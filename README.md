@@ -31,8 +31,8 @@ data-cache constructor requie a fetch function, and an optional options
 
 ## Fetch function/async function
 
-a function/async function that return a Iterator object that contains the [key, value] pairs for each
-e.g. Map.entries(), OBject.entries(object)
+a function/async function that return a iterator/asyncIterator object that contains the [key, value] pairs for each
+e.g. Map.entries(), Object.entries(object), Async Generator Function
 
 Note: the order of items in entries is important, if the max < size of entries then only 1 to max items are loaded to cached.
 Therefore items must be sorted by its prority, which the most important one is the first.
@@ -79,3 +79,26 @@ Therefore items must be sorted by its prority, which the most important one is t
     Return total number of items currently in cache. Note, that
     expired items are included as part of this item count.
 
+## Read data from CSV to cache
+```javascript
+const fs = require('fs');
+const parse = require('csv-parse');
+const stream = require('stream')
+const util = require('util');
+const pipeline = util.promisify(stream.pipeline);
+
+async function* readCSVByLine() {
+    const readFileStream = fs.createReadStream(__dirname + "/keyword.csv");
+    const csvParser = parse({});
+    await pipeline(readFileStream, csvParser);
+    for await (const record of csvParser) {
+        yield record;
+    }
+}
+const cache = new (require("refreshed-cache"))(readCSVByLine);
+await cache.init();
+cache.get("aa");//
+await cache.close();
+```
+The code above will read content from CSV to cache, the first column will be keys and the second column will be values.
+The cache will be refresh with update content of CSV file every 600 second (default)
