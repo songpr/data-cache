@@ -31,7 +31,7 @@ test("fetch refresh cache every 1 sec", async (done) => {
             expect(cache.get("ee")).toEqual(undefined);
             expect(cache.size).toEqual(3);
         }
-        await delay(1000);
+        await delay(1200);
     }
     console.log("test fetch close")
     await cache.close();
