@@ -37,7 +37,7 @@ test("fetch exceed max, refresh cache every 1 sec", async (done) => {
         expect(cache.get("d")).toEqual(undefined);
         expect(cache.get("ee")).toEqual(undefined);
         expect(cache.size).toEqual(max);
-        await delay(1000);
+        await delay(1200);
     }
     console.log("test fetch close")
     await cache.close();
@@ -60,14 +60,14 @@ test("fetch exceed max, maxAge expired, maxAge < refreshAge", async (done) => {
     expect(cache.get("d")).toEqual(undefined);
     expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(max);
-    await delay(1100);
+    await delay(1200);
     //all items expired now
     expect(cache.size).toEqual(max);//expired but not get it so size not change
     expect(cache.get("a")).toEqual(undefined);
     expect(cache.get("b")).toEqual(undefined);
     expect(cache.get("c")).toEqual(undefined);
     expect(cache.size).toEqual(0);//0 because we just get the expired item, so it removed
-    await delay(1000);
+    await delay(1200);
     //all items refresh now
     expect(cache.size).toEqual(max);
     expect(cache.get("a")).toEqual(2);
@@ -99,7 +99,7 @@ test("fetch exceed max ,maxAge expired, maxAge > refreshAge, resetOnRefresh=true
     expect(cache.get("d_1")).toEqual(undefined);
     expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(3);
-    await delay(1100);
+    await delay(1200);
     //all items refresh now
     //default resetOnRefresh = true, so remove old items
     expect(cache.size).toEqual(3);//new items
@@ -110,7 +110,7 @@ test("fetch exceed max ,maxAge expired, maxAge > refreshAge, resetOnRefresh=true
     expect(cache.get("b_2")).toEqual(4);
     expect(cache.get("c_2")).toEqual(6);
     expect(cache.size).toEqual(3);
-    await delay(1000);
+    await delay(1200);
     //all items refresh now
     expect(cache.size).toEqual(3);//new items only
     expect(cache.get("a_3")).toEqual(3);
@@ -142,7 +142,7 @@ test("fetch size < max ,maxAge expired, maxAge > refreshAge, resetOnRefresh=true
     expect(cache.get("d_1")).toEqual(4);
     expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(4);
-    await delay(1100);
+    await delay(1200);
     //all items refresh now
     //default resetOnRefresh = true, so remove old items
     expect(cache.size).toEqual(4);//new items
@@ -155,7 +155,7 @@ test("fetch size < max ,maxAge expired, maxAge > refreshAge, resetOnRefresh=true
     expect(cache.get("c_2")).toEqual(6);
     expect(cache.get("d_2")).toEqual(8);
     expect(cache.size).toEqual(4);
-    await delay(1000);
+    await delay(1200);
     //all items refresh now
     expect(cache.size).toEqual(4);//new items only
     expect(cache.get("a_3")).toEqual(3);
@@ -189,7 +189,7 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
 
     expect(cache.size).toEqual(4);//new items
     expect(cache.get("ee")).toEqual(undefined);
-    await delay(1100);
+    await delay(1200);
     //new 4 item, no old item have to be removed
     //default resetOnRefresh = false, so last items are exist
     expect(cache.size).toEqual(8);//new items + old items
@@ -198,7 +198,7 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
     expect(cache.get("c_2")).toEqual(6);
     expect(cache.get("d_2")).toEqual(8);
     expect(cache.get("b_1")).toEqual(2);
-    await delay(1000);
+    await delay(1200);
     //new 4 item, 2 no old item have to be removed
     expect(cache.size).toEqual(max);
     expect(cache.get("a_1")).toEqual(undefined);
@@ -215,7 +215,7 @@ test("fetch size < max, maxAge expired, maxAge > refreshAge, resetOnRefresh = fa
     expect(cache.get("d_1")).toEqual(4);
     expect(cache.get("b_1")).toEqual(2);
     expect(cache.size).toEqual(max);
-    await delay(1000);
+    await delay(1200);
     //now first round is expired (even d_1,b_1 have recently call) and have 4 new fecth + 4*2 of round(2,3)
     expect(cache.size).toEqual(max);
     //expired items
