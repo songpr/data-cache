@@ -145,7 +145,7 @@ async function* readCSVMaxLinesOnWeb() {
     await csvWebStream.destroy();
 }
 
-const cache = new (require("refreshed-cache"))(readCSV10LinesOnWeb,{max});
+const cache = new (require("refreshed-cache"))(readCSVMaxLinesOnWeb,{max});
 await cache.init();
 console.log(cache.get("cpPG"))//"MnelEaBbPP"
 console.log(cache.get("HClmlnlM"))//"I"

@@ -102,7 +102,6 @@ test("test with large CSV file, stream first 10 items to cache", async (done) =>
 //https://raw.githubusercontent.com/songpr/refreshed-cache/main/test/1000000.csv
 var got = require('got');
 
-
 async function* readCSV10LinesOnWeb() {
     const csvWebStream = got.stream("https://raw.githubusercontent.com/songpr/refreshed-cache/main/test/1000000.csv");
     const csvParser = parse({});
