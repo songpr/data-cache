@@ -78,15 +78,26 @@ class DataCache {
             this._cache.set(key, value);
         }
         const asyncRefresh = async () => {
-            const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+            if (this.max <= 0) return;// max <=0 then do not refresh since it cannot cache
+            const dataIterator = this._isAsyncFetch ? await this._fetch() : this._fetch();
+            const isIterator = Symbol.iterator in Object(data);
+            const isAsyncIterator = Symbol.asyncIterator in Object(data)
+            if (!isIterator && !isAsyncIterator) throw new Error("fetch return non iterable data");
+            const nextIterator = isAsyncIterator ? dataIterator[Symbol.asyncIterator]() : dataIterator[Symbol.iterator]();
+            const firstItdata = isAsyncIterator ? await nextIterator.next() : nextIterator.next();
+            const firstItem = { key: firstItdata.value[0], value: firstItdata.value[1] };
+            //reset after check data is valid, and can get first key,value
             if (this.resetOnRefresh == true) {
+                //no need to prune since it all
                 this._cache.reset();//reset on each refresh
+            } else {
+                this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
             }
-            if (!(Symbol.iterator in Object(data)) && !(Symbol.asyncIterator in Object(data))) throw new Error("fetch return non iterable data");
-            this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
-            let i = 0;
+            this._cache.set(firstItem.key, firstItem.value);
+            if (firstItdata.done == true) return; //no more data
+            let i = 1; //start from 1 since we already read 1
             //async iterator
-            for await (const [key, value] of data) {
+            for await (const [key, value] of nextIterator) {
                 if ((++i) > this.max) break; // add items do not exceed max
                 this._cache.set(key, value);
             }
