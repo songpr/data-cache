@@ -31,7 +31,7 @@ data-cache constructor requie a fetch function, and an optional options
 
 ## Fetch function/async function
 
-a function/async function that return a iterator/asyncIterator object that contains the [key, value] pairs for each
+a function/async function that return a iterator/asyncIterator object that contains the [key, value] pairs for each item
 e.g. Map.entries(), Object.entries(object), Async Generator Function
 
 Note: the order of items in entries is important, if the max < size of entries then only 1 to max items are loaded to cached.
@@ -45,9 +45,10 @@ Therefore items must be sorted by its prority, which the most important one is t
    Default is 600 seconds.
 
 * `refreshAge` refresh time in second. New data will be fetch on each refresh and expired items will be removed every refreshAge.
+   Also the expired data will be prune in every refresh only the first item of each refresh successfully retrieved.
    Default is maxAge.
 
-* `resetOnRefresh` true then reset cache on every refresh, so only the new fetch data is cached.
+* `resetOnRefresh` true then reset cache on every refresh only the first item of each refresh successfully retrieved, so only the new fetch data is cached.
    Default is true
 ## API
 
