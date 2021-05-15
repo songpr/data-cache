@@ -4,3 +4,4 @@ example
 .gitignore
 .npmrc
 .vscode
+azure-pipelines.yml
