@@ -47,6 +47,11 @@ Therefore items must be sorted by its prority, which the most important one is t
 * `refreshAge` refresh time in second. New data will be fetch on each refresh and expired items will be removed every refreshAge.
    Also the expired data will be prune in every refresh only the first item of each refresh successfully retrieved.
    Default is maxAge.
+   note if refreshAt is specified too, then the refreshAt will be use, and ignore refreshAge.
+
+*  `refreshAt` refresh at specific time every x days. Specific as object in format {days,at} e.g. {days:2,at: "10:00:00"}, time of the day to refresh the data
+                                                days:x -- refresh every x days 
+                                                at:"HH:mm:ss" -- refresh at 
 
 * `resetOnRefresh` true then reset cache on every refresh only the first item of each refresh successfully retrieved, so only the new fetch data is cached.
    Default is true
