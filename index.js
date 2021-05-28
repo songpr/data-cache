@@ -20,7 +20,7 @@ class DataCache {
      *                                          note if refreshAt is specified too, then to refreshAt will be use, and ignore refreshAge.                                        
      *                              refreshAt = refresh time is object in format {days,at} e.g. {days:2,at: "10:00:00"}, time of the day to refresh the data
      *                                           days:xx -- refresh every xx days 
-     *                                           at:"HH:mm" -- refresh at 
+     *                                           at:"HH:mm:ss" -- refresh at 
      *                                          
      *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
      *                              fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. always = false - Not implemented yet.
@@ -136,6 +136,13 @@ class DataCache {
     }
 
     async init() {
+        const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+
+        if (!(Symbol.iterator in Object(data)) && !(Symbol.asyncIterator in Object(data))) throw new Error("fetch return non iterable data");
+        for await (const [key, value] of data) {
+            if (this.size >= this.max) break;
+            this._cache.set(key, value);
+        }
         const asyncRefresh = async () => {
             if (this.max <= 0) return;// max <=0 then do not refresh since it cannot cache
             const dataIterator = this._isAsyncFetch ? await this._fetch() : this._fetch();
@@ -163,16 +170,9 @@ class DataCache {
         }
         if (this.refreshAt) {
             //not init data because it will run at the specific time
-            await this._refreshAtLoop(asyncRefresh, this.refreshAt)
+            await this._refreshAtLoop(asyncRefresh, this.refreshAt, this.refreshAt.daysMs);
         } else {
             await this._timeoutLoop(asyncRefresh, this.refreshAge * 1000);
-            const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
-
-            if (!(Symbol.iterator in Object(data)) && !(Symbol.asyncIterator in Object(data))) throw new Error("fetch return non iterable data");
-            for await (const [key, value] of data) {
-                if (this.size >= this.max) break;
-                this._cache.set(key, value);
-            }
         }
     }
 

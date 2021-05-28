@@ -10,17 +10,9 @@ test("fetch at specific time", async (done) => {
     console.log(options.refreshAt.at)
     const cache = new (require("../index"))(fn, options);
     await cache.init();
-    expect(cache.get("a")).toEqual(undefined);
-    expect(cache.get("b")).toEqual(undefined);
-    expect(cache.get("c")).toEqual(undefined);
-    expect(cache._runInMs).toBeGreaterThan(0);
-    expect(cache._runInMs).toBeLessThanOrEqual(1000);
-    await delay(1000);
     expect(cache.get("a")).toEqual(1);
     expect(cache.get("b")).toEqual(2);
     expect(cache.get("c")).toEqual(3);
-    expect(cache.get("d")).toEqual(undefined);
-    expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(3);
     console.log("next run at ", cache._runAt);
     //expect next run time to be within +- 1sec of refreshAt.at
@@ -41,12 +33,6 @@ test("fetch at specific time, maxAge", async (done) => {
     console.log(options.refreshAt.at)
     const cache = new (require("../index"))(fn, options);
     await cache.init();
-    expect(cache.get("a")).toEqual(undefined);
-    expect(cache.get("b")).toEqual(undefined);
-    expect(cache.get("c")).toEqual(undefined);
-    expect(cache._runInMs).toBeGreaterThan(0);
-    expect(cache._runInMs).toBeLessThanOrEqual(1000);
-    await delay(1000);
     expect(cache.get("a")).toEqual(1);
     expect(cache.get("b")).toEqual(2);
     expect(cache.get("c")).toEqual(3);
