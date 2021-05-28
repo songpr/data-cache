@@ -23,9 +23,9 @@ class DataCache {
      *                                           at:"HH:mm:ss" -- refresh at 
      *                                          
      *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
-     *                              fetchMissCache - true fecth miss cache with fetch(key) - fetch function must support get individual data by key, where key is the key that no cache data, false do not fetch miss cache. always = false - Not implemented yet.
+     *                              fetchByKey - function use 
      */
-    constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, fetchMissCache: false, max: 10000 }) {
+    constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
         Object.defineProperty(this, "_fetch", { value: fetch, configurable: false, enumerable: false, writable: false });
         const _isAsyncFetch = util.types.isAsyncFunction(fetch);
@@ -36,8 +36,6 @@ class DataCache {
         if (!Number.isInteger(refreshAge)) throw new Error("Invalid refreshAge");
         const resetOnRefresh = options.resetOnRefresh === undefined ? true : options.resetOnRefresh;
         if (typeof (resetOnRefresh) !== "boolean") throw new Error("Invalid resetOnRefresh");
-        const fetchMissCache = options.fetchMissCache === undefined ? false : options.fetchMissCache;
-        if (typeof (fetchMissCache) !== "boolean") throw new Error("Invalid fetchMissCache");
         if (options.refreshAt != null) {
             const { days, at } = options.refreshAt;
             if (!Number.isInteger(days) || days < 0 || days > 14) throw new Error("Invalid refreshAt.days, support 1-14");
@@ -49,12 +47,12 @@ class DataCache {
             //property to track next run at specific time if it have refreshAt only, just for debug only do not use to run
             Object.defineProperty(this, "_runAt", { value: undefined, configurable: false, enumerable: false, writable: true });
         }
+
         const max = options.max || 10000;
         if (!Number.isInteger(max)) throw new Error("Invalid max");
         Object.defineProperty(this, "maxAge", { get: () => maxAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "refreshAge", { get: () => refreshAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
-        Object.defineProperty(this, "fetchMissCache", { get: () => false, configurable: false, enumerable: true });//always false. TODO
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
         const _lruCache = new (require("lru-cache"))({ max: max, maxAge: maxAge * 1000 })
         Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
@@ -187,6 +185,15 @@ class DataCache {
      * @returns 
      */
     get(key) {
+        return this._cache.get(key);
+    }
+
+    /**
+     * 
+     * @param {*} key 
+     * @returns 
+     */
+    async getOrFetch(key) {
         return this._cache.get(key);
     }
 
