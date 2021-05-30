@@ -23,7 +23,8 @@ class DataCache {
      *                                           at:"HH:mm:ss" -- refresh at 
      *                                          
      *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
-     *                              fetchByKey - function use 
+     *                              fetchByKey - function/async function use to fetch value by key and and keep it to cache.
+     *                                           fetchByKey must return value (null is count as a value), and return undefined when no data found.
      */
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
@@ -131,6 +132,13 @@ class DataCache {
             }
             , configurable: false, enumerable: false, writable: false
         });
+        //getOrRefresh option
+        const fetchByKey = options.fetchByKey;
+        if (typeof (fetchByKey) === "function") {
+            Object.defineProperty(this, "_fetchByKey", { value: fetchByKey, configurable: false, enumerable: false, writable: false });
+            const _isAsyncFetchByKey = util.types.isAsyncFunction(fetchByKey);
+            Object.defineProperty(this, "_isAsyncFetchByKey", { get: () => _isAsyncFetchByKey, configurable: false, enumerable: false });
+        }
     }
 
     async init() {
@@ -176,11 +184,10 @@ class DataCache {
 
 
     /**
-     * get cache item by key, return undefined if not found.
+     * get cache value by key, return undefined if not found.
      * 
      * This method will update recently used.
      * 
-     * if fetchMissCache == true , this will fetch the missing cache by the key and cache it. 
      * @param {*} key 
      * @returns 
      */
@@ -189,12 +196,21 @@ class DataCache {
     }
 
     /**
+     * get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
      * 
+     * If fetchByKey throw exception this will throw exception as well.
      * @param {*} key 
-     * @returns 
+     * @returns value ehn
      */
     async getOrFetch(key) {
-        return this._cache.get(key);
+        const value = this._cache.get(key);
+        if (value !== undefined) return value;
+        //miss cache
+        if (this._fetchByKey !== undefined) {
+            const newValue = this._isAsyncFetchByKey ? await this._fetchByKey(key) : this._fetchByKey(key);
+            if (newValue !== undefined) this._cache.set(key, newValue);
+            return newValue;
+        }
     }
 
     /**
