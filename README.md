@@ -55,6 +55,12 @@ Therefore items must be sorted by its prority, which the most important one is t
 
 * `resetOnRefresh` true then reset cache on every refresh only the first item of each refresh successfully retrieved, so only the new fetch data is cached.
    Default is true
+
+* `fetchByKey` - function/async function use to fetch value by key and and keep it to cache. fetchByKey must return value (null is count as a value), and return undefined when no data found.
+
+* `maxMiss` -  if fetchByKey is set then this is the maximum size of the miss cache key. Setting it to 0 then no miss cache will be cached; default is 2000. if the key is fouud in miss cache key, fetchByKey will not be called.
+
+* `maxAgeMiss` - if fetchByKey is set this is Maximum age of miss cache key in second. Expired items will be removed every refreshAge; default is refreshAge.
 ## API
 
 * `async init()`
@@ -69,6 +75,11 @@ Therefore items must be sorted by its prority, which the most important one is t
     This will update the "recently used"-ness of the key.
 
     The key and val can be any type. But using object as key have to same object.
+
+* `async getOrFetch(key) => value`
+    get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
+
+    If fetchByKey throw exception this will throw exception as well.
 
 * `has(key) => boolean`
 
