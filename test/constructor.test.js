@@ -21,7 +21,6 @@ test("maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
     expect(dataCache.maxAge).toBe(600);
     expect(dataCache.refreshAge).toBe(600);
     expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
     expect(dataCache.max).toBe(10000);
     dataCache.maxAge = 10000;
     dataCache.refreshAge = 10000;
@@ -32,7 +31,6 @@ test("maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () => {
     expect(dataCache.maxAge).toBe(600);
     expect(dataCache.refreshAge).toBe(600);
     expect(dataCache.resetOnRefresh).toBe(true);
-    expect(dataCache.fetchMissCache).toBe(false);
     expect(dataCache.max).toBe(10000);
 })
 
@@ -48,9 +46,6 @@ test("check maxAge,refreshAge,resetOnRefresh,fetchMissCache,max initiate", () =>
         new (require("../index"))(fn, { resetOnRefresh: 500 });
     }).toThrow("Invalid resetOnRefresh");
     expect(() => {
-        new (require("../index"))(fn, { fetchMissCache: [] });
-    }).toThrow("Invalid fetchMissCache");
-    expect(() => {
         new (require("../index"))(fn, { max: (new Date()) });
     }).toThrow("Invalid max");
 })
@@ -59,6 +54,6 @@ test("list options", () => {
     const fn = () => { };
     const dataCache = new (require("../index"))(fn);
     const options = Object.keys(dataCache);
-    expect(options.length).toEqual(6);
-    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "fetchMissCache", "max", "size"]))
+    expect(options.length).toEqual(5);
+    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "max", "size"]))
 })
