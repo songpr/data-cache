@@ -60,7 +60,7 @@ Therefore items must be sorted by its prority, which the most important one is t
 
 * `maxMiss` -  if fetchByKey is set then this is the maximum size of the miss cache key. Setting it to 0 then no miss cache will be cached; default is 2000. if the key is fouud in miss cache key, fetchByKey will not be called.
 
-* `fetchByKey` - if fetchByKey is set this is Maximum age of miss cache key in second. Expired items will be removed every refreshAge; default is refreshAge.
+* `maxAgeMiss` - if fetchByKey is set this is Maximum age of miss cache key in second. Expired items will be removed every refreshAge; default is refreshAge.
 ## API
 
 * `async init()`
