@@ -20,11 +20,13 @@ class DataCache {
      *                                          note if refreshAt is specified too, then to refreshAt will be use, and ignore refreshAge.                                        
      *                              refreshAt = refresh time is object in format {days,at} e.g. {days:2,at: "10:00:00"}, time of the day to refresh the data
      *                                           days:xx -- refresh every xx days 
-     *                                           at:"HH:mm:ss" -- refresh at 
-     *                                          
+     *                                           at:"HH:mm:ss" -- refresh at
      *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
      *                              fetchByKey - function/async function use to fetch value by key and and keep it to cache.
      *                                           fetchByKey must return value (null is count as a value), and return undefined when no data found.
+     *                              maxMiss - if fetchByKey is set then this is the maximum size of the miss cache key. Setting it to 0 then no miss cache will be cached; default is 2000.
+     *                                           if the key is fouud in miss cache key, fetchByKey will not be called.
+     *                              maxAgeMiss - if fetchByKey is set this is Maximum age of miss cache key in second. Expired items will be removed every refreshAge; default is refreshAge.
      */
     constructor(fetch, options = { maxAge: 600, resetOnRefresh: true, max: 10000 }) {
         if (typeof (fetch) !== "function") throw new Error("fetch must be function/async function");
@@ -138,6 +140,14 @@ class DataCache {
             Object.defineProperty(this, "_fetchByKey", { value: fetchByKey, configurable: false, enumerable: false, writable: false });
             const _isAsyncFetchByKey = util.types.isAsyncFunction(fetchByKey);
             Object.defineProperty(this, "_isAsyncFetchByKey", { get: () => _isAsyncFetchByKey, configurable: false, enumerable: false });
+            const maxMiss = options.maxMiss || 2000;
+            if (!Number.isInteger(maxMiss)) throw new Error("Invalid maxMiss");
+            const maxAgeMiss = options.maxAgeMiss || refreshAge;
+            if (!Number.isInteger(maxAgeMiss)) throw new Error("Invalid maxAgeMiss");
+            const _missLRUCache = new (require("lru-cache"))({ max: maxMiss, maxAge: maxAgeMiss * 1000 })
+            Object.defineProperty(this, "_missCache", { get: () => _missLRUCache, configurable: false, enumerable: false });
+            Object.defineProperty(this, "maxMiss", { get: () => maxMiss, configurable: false, enumerable: true });
+            Object.defineProperty(this, "maxAgeMiss", { get: () => maxAgeMiss, configurable: false, enumerable: true });
         }
     }
 
@@ -165,6 +175,7 @@ class DataCache {
             } else {
                 this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
             }
+            if (this._missCache !== undefined) this._missCache.prune();
             this._cache.set(firstItem.key, firstItem.value);
             if (firstItdata.done == true) return; //no more data
             let i = 1; //start from 1 since we already read 1
@@ -204,11 +215,18 @@ class DataCache {
      */
     async getOrFetch(key) {
         const value = this._cache.get(key);
-        if (value !== undefined) return value;
         //miss cache
+        if (value !== undefined) return value;
         if (this._fetchByKey !== undefined) {
+            //check miss cache key,if it have been try to fetch already or not.
+            //To prevent it to repeatly fetch on really miss cache key, until the missd key cache is expired
+            if (this._missCache.peek(key) !== undefined) return undefined; //peek will not update recentness of this missed key so allow it to expired.
             const newValue = this._isAsyncFetchByKey ? await this._fetchByKey(key) : this._fetchByKey(key);
-            if (newValue !== undefined) this._cache.set(key, newValue);
+            if (newValue !== undefined) {
+                this._cache.set(key, newValue)
+            } else {
+                this._missCache.set(key, true);
+            };
             return newValue;
         }
     }
