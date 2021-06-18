@@ -34,6 +34,8 @@ data-cache constructor requie a fetch function, and an optional options
 a function/async function that return a iterator/asyncIterator object that contains the [key, value] pairs for each item
 e.g. Map.entries(), Object.entries(object), Async Generator Function
 
+if Options.passRecentKeysOnRefresh is true, then recently keys (Array) will be passed to this function when refresh data
+
 Note: the order of items in entries is important, if the max < size of entries then only 1 to max items are loaded to cached.
 Therefore items must be sorted by its prority, which the most important one is the first.
 ## Options
@@ -52,6 +54,9 @@ Therefore items must be sorted by its prority, which the most important one is t
 *  `refreshAt` refresh at specific time every x days. Specific as object in format {days,at} e.g. {days:2,at: "10:00:00"}, time of the day to refresh the data
                                                 days:x -- refresh every x days 
                                                 at:"HH:mm:ss" -- refresh at 
+
+* `passRecentKeysOnRefresh` pass recent keys (Array) - that not expired - to fetch function when refresh default = false.
+                    This is useful when do you want to refresh the recently keys.
 
 * `resetOnRefresh` true then reset cache on every refresh only the first item of each refresh successfully retrieved, so only the new fetch data is cached.
    Default is true

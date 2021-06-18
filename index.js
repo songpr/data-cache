@@ -13,7 +13,7 @@ class DataCache {
     /**
      * 
      * @param {Function} fetch - function/async function to fetch all data and return as array of [key,value]/ a Iterator object that contains the [key, value] pairs 
-     * @param {Object} options - options(maxAge, refreshAge ,resetOnRefresh = true,fetchMissCache,max)
+     * @param {Object} options - options(max=10000,maxAge=600, refreshAge=maxAge ,resetOnRefresh = true,fetchByKey,maxMiss=2000,maxAgeMiss=refreshAge)
      *                              max - The maximum size of the cache. Setting it to 0 then no data will be cached; default is 10000,
      *                              maxAge - Maximum age in second. Expired items will be removed every refreshAge; default is 600 seconds
      *                              refreshAge - refresh time in second. New data will be fetch on each refresh and expired items will be removed every refreshAge; default is maxAge,
@@ -21,6 +21,7 @@ class DataCache {
      *                              refreshAt = refresh time is object in format {days,at} e.g. {days:2,at: "10:00:00"}, time of the day to refresh the data
      *                                           days:xx -- refresh every xx days 
      *                                           at:"HH:mm:ss" -- refresh at
+     *                              passRecentKeysOnRefresh - pass recent keys - that not expired - to fetch function when refresh default = false,
      *                              resetOnRefresh - true then reset cache on every refresh, so only the new fetch data is cached; default = true,
      *                              fetchByKey - function/async function use to fetch value by key and and keep it to cache.
      *                                           fetchByKey must return value (null is count as a value), and return undefined when no data found.
@@ -50,9 +51,11 @@ class DataCache {
             //property to track next run at specific time if it have refreshAt only, just for debug only do not use to run
             Object.defineProperty(this, "_runAt", { value: undefined, configurable: false, enumerable: false, writable: true });
         }
-
+        const passRecentKeysOnRefresh = options.passRecentKeysOnRefresh === undefined ? false : options.passRecentKeysOnRefresh;
+        if (typeof (passRecentKeysOnRefresh) !== "boolean") throw new Error("Invalid passRecentKeysOnRefresh");
         const max = options.max || 10000;
         if (!Number.isInteger(max)) throw new Error("Invalid max");
+        Object.defineProperty(this, "passRecentKeysOnRefresh", { get: () => passRecentKeysOnRefresh, configurable: false, enumerable: true });
         Object.defineProperty(this, "maxAge", { get: () => maxAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "refreshAge", { get: () => refreshAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
@@ -152,8 +155,7 @@ class DataCache {
     }
 
     async init() {
-        const data = this._isAsyncFetch ? await this._fetch(this._cache) : this._fetch(this._cache);
-
+        const data = this._isAsyncFetch ? await this._fetch(this.passRecentKeysOnRefresh ? [] : undefined) : this._fetch(this.passRecentKeysOnRefresh ? [] : undefined);
         if (!(Symbol.iterator in Object(data)) && !(Symbol.asyncIterator in Object(data))) throw new Error("fetch return non iterable data");
         for await (const [key, value] of data) {
             if (this.size >= this.max) break;
@@ -161,7 +163,14 @@ class DataCache {
         }
         const asyncRefresh = async () => {
             if (this.max <= 0) return;// max <=0 then do not refresh since it cannot cache
-            const dataIterator = this._isAsyncFetch ? await this._fetch(this._cache) : this._fetch(this._cache);
+            const recentKeys = [];
+            if (this.size > 0) {
+                //get recent keys to referesh thier value, the expired key will not be included, and this function do not change recently ness 
+                this._cache.forEach((value, key, cache) => {
+                    recentKeys.push(key);
+                });
+            }
+            const dataIterator = this._isAsyncFetch ? await this._fetch(this.passRecentKeysOnRefresh ? recentKeys : undefined) : this._fetch(this.passRecentKeysOnRefresh ? recentKeys : undefined);
             const isIterator = Symbol.iterator in Object(dataIterator);
             const isAsyncIterator = Symbol.asyncIterator in Object(dataIterator)
             if (!isIterator && !isAsyncIterator) throw new Error("fetch return non iterable data");
