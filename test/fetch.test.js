@@ -8,6 +8,7 @@ test("fetch empty", async (done) => {
     expect(cache.get("d")).toEqual(undefined);
     expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(0);
+    await cache.close();
     done();
 })
 test("fetch only", async (done) => {
@@ -20,6 +21,7 @@ test("fetch only", async (done) => {
     expect(cache.get("d")).toEqual(undefined);
     expect(cache.get("ee")).toEqual(undefined);
     expect(cache.size).toEqual(3);
+    await cache.close();
     done();
 })
 

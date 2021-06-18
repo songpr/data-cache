@@ -54,6 +54,6 @@ test("list options", () => {
     const fn = () => { };
     const dataCache = new (require("../index"))(fn);
     const options = Object.keys(dataCache);
-    expect(options.length).toEqual(5);
-    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "max", "size"]))
+    expect(options.length).toEqual(6);
+    expect(options).toEqual(expect.arrayContaining(["maxAge", "refreshAge", "resetOnRefresh", "max", "size", "passRecentKeysOnRefresh"]))
 })
