@@ -1,6 +1,15 @@
 const { expect } = require("@jest/globals");
 const delay = require("delay");
 
+test("fetch empty", async (done) => {
+    const fn = () => Object.entries({});
+    const cache = new (require("../index"))(fn);
+    await cache.init();
+    expect(cache.get("d")).toEqual(undefined);
+    expect(cache.get("ee")).toEqual(undefined);
+    expect(cache.size).toEqual(0);
+    done();
+})
 test("fetch only", async (done) => {
     const fn = () => Object.entries({ a: 1, b: 2, c: 3 });
     const cache = new (require("../index"))(fn);
