@@ -152,7 +152,7 @@ class DataCache {
     }
 
     async init() {
-        const data = this._isAsyncFetch ? await this._fetch() : this._fetch();
+        const data = this._isAsyncFetch ? await this._fetch(this._cache) : this._fetch(this._cache);
 
         if (!(Symbol.iterator in Object(data)) && !(Symbol.asyncIterator in Object(data))) throw new Error("fetch return non iterable data");
         for await (const [key, value] of data) {
@@ -161,7 +161,7 @@ class DataCache {
         }
         const asyncRefresh = async () => {
             if (this.max <= 0) return;// max <=0 then do not refresh since it cannot cache
-            const dataIterator = this._isAsyncFetch ? await this._fetch() : this._fetch();
+            const dataIterator = this._isAsyncFetch ? await this._fetch(this._cache) : this._fetch(this._cache);
             const isIterator = Symbol.iterator in Object(dataIterator);
             const isAsyncIterator = Symbol.asyncIterator in Object(dataIterator)
             if (!isIterator && !isAsyncIterator) throw new Error("fetch return non iterable data");
