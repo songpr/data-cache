@@ -176,7 +176,7 @@ class DataCache {
             if (!isIterator && !isAsyncIterator) throw new Error("fetch return non iterable data");
             const nextIterator = isAsyncIterator ? dataIterator[Symbol.asyncIterator]() : dataIterator[Symbol.iterator]();
             const firstItdata = isAsyncIterator ? await nextIterator.next() : nextIterator.next();
-            if (firstItdata.done === true) return;//no data
+            if (firstItdata.done === true || !Array.isArray(firstItdata.value)) return;//no data
             const firstItem = { key: firstItdata.value[0], value: firstItdata.value[1] };
             //reset after check data is valid, and can get first key,value
             if (this.resetOnRefresh == true) {
@@ -215,6 +215,19 @@ class DataCache {
     get(key) {
         return this._cache.get(key);
     }
+
+    /**
+     * set cache value by key.
+     * 
+     * This method will update recently used.
+     * 
+     * @param {*} key 
+     * @returns 
+     */
+    set(key, value) {
+        this._cache.set(key, value);
+    }
+
 
     /**
      * get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
