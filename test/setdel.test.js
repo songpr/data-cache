@@ -191,7 +191,7 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done)
         round++
         return entires;
     };
-    const cache = new (require("../index"))(fn, { maxAge: 2, refreshAge: 1, resetOnRefresh: false });
+    const cache = new (require("../index"))(fn, { maxAge: 4, refreshAge: 2, resetOnRefresh: false });
     await cache.init()
     expect(cache.get("a_1")).toEqual(1);
     expect(cache.get("b_1")).toEqual(2);
@@ -210,7 +210,7 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done)
     cache.set("c_1", "4");
     expect(cache.get("c_1")).toEqual("4");
     expect(cache.size).toEqual(4); //increse by 1, key null
-    await delay(1250);
+    await delay(2400);
     //all items refresh now
     //default resetOnRefresh = false, so last items are exist
     expect(cache.size).toEqual(7);//new items
@@ -221,7 +221,7 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done)
     expect(cache.get("a_2")).toEqual(2);
     expect(cache.get("b_2")).toEqual(4);
     expect(cache.get("c_2")).toEqual(6);
-    await delay(1250);
+    await delay(2400);
     //new refresh
     //first round item expired now
     expect(cache.size).toEqual(6);//6 because expired items are prunded after refresh, so have 2 round of items
