@@ -81,6 +81,18 @@ Therefore items must be sorted by its prority, which the most important one is t
 
     The key and val can be any type. But using object as key have to same object.
 
+* `set(key, value)`
+
+    set the cached data using key.
+    
+    This will update the "recently used"-ness of the key.
+
+    The key and val can be any type. But using object as key have to same object.
+
+* `del(key)`
+
+    delete the cached data using key.
+
 * `async getOrFetch(key) => value`
     get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
 

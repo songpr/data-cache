@@ -228,6 +228,16 @@ class DataCache {
         this._cache.set(key, value);
     }
 
+    /**
+     * del key from cache.
+     * 
+     * @param {*} key 
+     * @returns 
+     */
+    del(key) {
+        this._cache.del(key);
+    }
+
 
     /**
      * get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
