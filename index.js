@@ -236,6 +236,8 @@ class DataCache {
      */
     del(key) {
         this._cache.del(key);
+        //remove miss cache too. since we remove key from cache
+        if (this._missCache != null) this._missCache.del(key);
     }
 
 

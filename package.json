@@ -1,7 +1,7 @@
 {
   "name": "refreshed-cache",
   "description": "caching data with LRU Cache and refresh it within specified time",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "main": "index.js",
   "scripts": {
     "test": "jest"
@@ -25,7 +25,7 @@
     "csv-generate": "^3.4.3",
     "csv-parse": "^4.16.3",
     "delay": "^5.0.0",
-    "got": "^11.8.2",
+    "got": "^11.8.3",
     "jest": "^26.6.3",
     "jest-junit": "^12.2.0"
   },
