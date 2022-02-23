@@ -93,6 +93,10 @@ Therefore items must be sorted by its prority, which the most important one is t
 
     delete the cached data using key.
 
+* `asyncRefresh()`
+
+    async refresh data using fetch function and reset cache if and only if resetOnRefresh option is true, otherwise unexpired values will be kept.
+
 * `async getOrFetch(key) => value`
     get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
 

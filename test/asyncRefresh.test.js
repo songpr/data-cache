@@ -174,17 +174,27 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh = false", async (done)
     expect(cache.get("a_2")).toEqual(2);
     expect(cache.get("b_2")).toEqual(4);
     expect(cache.get("c_2")).toEqual(6);
-    await delay(1200);
-    //new refresh
-    //first round item expired now
-    expect(cache.size).toEqual(6);//6 because expired items are prunded after refresh, so have 2 round of items
-    expect(cache.get("a_1")).toEqual(undefined);
-    expect(cache.get("b_1")).toEqual(undefined);
-    expect(cache.get("c_1")).toEqual(undefined);
-    expect(cache.size).toEqual(6);//6 because expired items removed
+    await cache.asyncRefresh()
+    //new refresh before expired and last 2 round still be kept
+    expect(cache.get("a_1")).toEqual(1);
+    expect(cache.get("b_1")).toEqual(2);
+    expect(cache.get("c_1")).toEqual(3);
+    expect(cache.get("a_2")).toEqual(2);
+    expect(cache.get("b_2")).toEqual(4);
+    expect(cache.get("c_2")).toEqual(6);
     expect(cache.get("a_3")).toEqual(3);
     expect(cache.get("b_3")).toEqual(6);
     expect(cache.get("c_3")).toEqual(9);
+    expect(cache.size).toEqual(9);//9 have 3 round of items
+    await delay(1200);
+    //first round item expired now
+    expect(cache.size).toEqual(9);//9 because expired items are removed after refresh, so have 3 round of items
+    expect(cache.get("a_1")).toEqual(undefined);
+    expect(cache.get("b_1")).toEqual(undefined);
+    expect(cache.get("c_1")).toEqual(undefined);
+    expect(cache.get("a_4")).toEqual(4);
+    expect(cache.get("b_4")).toEqual(8);
+    expect(cache.get("c_4")).toEqual(12);
     await cache.close();
     done();
 })
