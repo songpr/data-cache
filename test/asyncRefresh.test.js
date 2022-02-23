@@ -17,6 +17,7 @@ test("manual refresh", async (done) => {
     expect(cache.get("b")).toEqual(undefined);
     expect(cache.get("c")).toEqual(undefined);
     expect(cache.size).toEqual(0);
+    //manual refresh
     await cache.asyncRefresh()
     expect(cache.get("a")).toEqual(1);
     expect(cache.get("b")).toEqual(2);
@@ -134,7 +135,7 @@ test("maxAge expired, maxAge > refreshAge, resetOnRefresh=true", async (done) =>
     expect(cache.get("b_2")).toEqual(4);
     expect(cache.get("c_2")).toEqual(6);
     expect(cache.size).toEqual(3);
-    await delay(1200);
+    await cache.asyncRefresh()
     //all items refresh now
     expect(cache.size).toEqual(3);//new items only
     expect(cache.get("a_3")).toEqual(3);

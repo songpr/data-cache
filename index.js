@@ -184,9 +184,9 @@ class DataCache {
                 //no need to prune since it all
                 this._cache.clear();//reset on each refresh
             } else {
-                this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
+                this._cache.purgeStale()// remove expired items before insert new fetch so left only non expired recently use cache items.
             }
-            if (this._missCache !== undefined) this._missCache.prune();
+            if (this._missCache !== undefined) this._missCache.purgeStale();
             this._cache.set(firstItem.key, firstItem.value);
             if (firstItdata.done == true) return; //no more data
             let i = 1; //start from 1 since we already read 1
