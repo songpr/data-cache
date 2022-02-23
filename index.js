@@ -161,6 +161,7 @@ class DataCache {
             if (this.size >= this.max) break;
             this._cache.set(key, value);
         }
+
         const asyncRefresh = async () => {
             if (this.max <= 0) return;// max <=0 then do not refresh since it cannot cache
             const recentKeys = [];
@@ -195,6 +196,10 @@ class DataCache {
                 this._cache.set(key, value);
             }
         }
+        /**
+         * async fetch data using fetch function and reset cache if and only if resetOnRefresh option is true. 
+         * @property {object} */
+        Object.defineProperty(this, "asyncRefresh", { value: asyncRefresh, configurable: false, enumerable: false, writable: false });
         if (this.refreshAt) {
             //not init data because it will run at the specific time
             await this._refreshAtLoop(asyncRefresh, this.refreshAt, this.refreshAt.daysMs);
