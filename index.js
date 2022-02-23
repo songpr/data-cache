@@ -60,9 +60,9 @@ class DataCache {
         Object.defineProperty(this, "refreshAge", { get: () => refreshAge, configurable: false, enumerable: true });
         Object.defineProperty(this, "resetOnRefresh", { get: () => resetOnRefresh, configurable: false, enumerable: true });
         Object.defineProperty(this, "max", { get: () => max, configurable: false, enumerable: true });
-        const _lruCache = new (require("lru-cache"))({ max: max, maxAge: maxAge * 1000 })
+        const _lruCache = new (require("lru-cache"))({ max: max, ttl: maxAge * 1000 })
         Object.defineProperty(this, "_cache", { get: () => _lruCache, configurable: false, enumerable: false });
-        Object.defineProperty(this, "size", { get: () => _lruCache.itemCount, configurable: false, enumerable: true });
+        Object.defineProperty(this, "size", { get: () => _lruCache.size, configurable: false, enumerable: true });
 
         //property to track next run in ms, just for debug only do not use to run
         Object.defineProperty(this, "_runInMs", { value: undefined, configurable: false, enumerable: false, writable: true });
@@ -147,7 +147,7 @@ class DataCache {
             if (!Number.isInteger(maxMiss)) throw new Error("Invalid maxMiss");
             const maxAgeMiss = options.maxAgeMiss || refreshAge;
             if (!Number.isInteger(maxAgeMiss)) throw new Error("Invalid maxAgeMiss");
-            const _missLRUCache = new (require("lru-cache"))({ max: maxMiss, maxAge: maxAgeMiss * 1000 })
+            const _missLRUCache = new (require("lru-cache"))({ max: maxMiss, ttl: maxAgeMiss * 1000 })
             Object.defineProperty(this, "_missCache", { get: () => _missLRUCache, configurable: false, enumerable: false });
             Object.defineProperty(this, "maxMiss", { get: () => maxMiss, configurable: false, enumerable: true });
             Object.defineProperty(this, "maxAgeMiss", { get: () => maxAgeMiss, configurable: false, enumerable: true });
@@ -182,7 +182,7 @@ class DataCache {
             //reset after check data is valid, and can get first key,value
             if (this.resetOnRefresh == true) {
                 //no need to prune since it all
-                this._cache.reset();//reset on each refresh
+                this._cache.clear();//reset on each refresh
             } else {
                 this._cache.prune()// remove expired items before insert new fetch so left only non expired recently use cache items.
             }
@@ -283,7 +283,7 @@ class DataCache {
         if (this.isClose === true) return;//already close
         const close = true;
         Object.defineProperty(this, "isClose", { get: () => close, configurable: false, enumerable: true });
-        this._cache.reset();
+        this._cache.clear();
     }
 
 }
