@@ -93,6 +93,18 @@ Therefore items must be sorted by its prority, which the most important one is t
 
     delete the cached data using key.
 
+* `entries()`
+
+    Return a generator yielding [key, value] pairs.
+
+* `find(findFunction)`
+
+    Find a value for which the supplied fn method returns a truthy value, similar to Array.find().
+
+    The item add recently will be finded first.
+    
+    findFunction is called as fn(value, key, cache).
+
 * `asyncRefresh()`
 
     async refresh data using fetch function and reset cache if and only if resetOnRefresh option is true, otherwise unexpired values will be kept.

@@ -245,6 +245,23 @@ class DataCache {
         if (this._missCache != null) this._missCache.del(key);
     }
 
+    /**
+     * Return a generator yielding [key, value] pairs of cached items
+     * @returns {Generator} a generator yielding [key, value] pairs
+     */
+    entries() {
+        return this._cache.entries();
+    }
+
+    /**
+     * Find a value for which the supplied fn method returns a truthy value, similar to Array.find().
+     * fn is called as fn(value, key, cache).
+     * @param {*} findFunction 
+     * @returns 
+     */
+    find(findFunction) {
+        return this._cache.find(findFunction);
+    }
 
     /**
      * get cache value by key, if it's not found try to get item using fetchByKey, return undefined if not found.
