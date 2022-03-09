@@ -55,6 +55,11 @@ test("test find base on recency of insert", async (done) => {
     cache.set("f", 11);
     expect(cache.find((value) => value > 3)).toBe(11);
     expect(cache.find((value) => value < 5)).toBe(3);
+    cache.get("b")
+    //find recent first
+    expect(cache.find((value) => value > 0)).toBe(2);
+    cache.get("a");
+    expect(cache.find((value) => value > 0)).toBe(1);
     await cache.close();
     done();
 })

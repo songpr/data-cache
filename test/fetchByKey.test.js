@@ -178,7 +178,7 @@ test("fetchByKey, with missing key", async (done) => {
     //get or fetch
     expect(await cache.getOrFetch("d")).toEqual(4);
     expect(await cache.getOrFetch("e")).toEqual(5);
-    expect(cache._missCache.length).toEqual(0);
+    expect(cache._missCache.size).toEqual(0);
     expect(cache.size).toEqual(3);
     expect(cache.get("b")).toEqual(undefined);//have been replaced
     expect(cache.get("c")).toEqual(3);
@@ -191,14 +191,14 @@ test("fetchByKey, with missing key", async (done) => {
         await cache.getOrFetch("z");
     }
     //do not refresh yet due to _missCache prevent repeat fetchs
-    expect(cache._missCache.length).toEqual(1);
+    expect(cache._missCache.size).toEqual(1);
     expect(cache.get("c")).toEqual(3);
     expect(cache.get("d")).toEqual(4);
     expect(cache.get("e")).toEqual(5);
     expect(cache.size).toEqual(3);
     await delay(400)// 200 * 3 (3 fetchs) + 400 = 1000 ms
     //refresh now
-    expect(cache._missCache.length).toEqual(1);//miss cache is not expire yet
+    expect(cache._missCache.size).toEqual(1);//miss cache is not expire yet
     expect(cache.get("c")).toEqual(3);
     expect(cache.get("d")).toEqual(undefined);
     expect(cache.get("e")).toEqual(undefined);
@@ -207,7 +207,7 @@ test("fetchByKey, with missing key", async (done) => {
     expect(cache.get("d")).toEqual(4);
     expect(cache.get("a")).toEqual(undefined); //replace by "d" due to reach max size
     await delay(800)// 200 (fetch d)+800 =1000
-    expect(cache._missCache.length).toEqual(0);//miss cache is expired
+    expect(cache._missCache.size).toEqual(0);//miss cache is expired
     //refresh now - also miss key z is now
     await cache.close();
     done();
@@ -232,7 +232,7 @@ test("fetchByKey, with missing key check repeatly", async (done) => {
     expect(cache.size).toEqual(3);
     //try to fetch miss cache repeatly
     expect(await cache.getOrFetch("z")).toEqual(undefined);
-    expect(cache._missCache.length).toEqual(1);//miss cache is expired
+    expect(cache._missCache.size).toEqual(1);//miss cache is expired
     await delay(1010)// miss cache expired
     const start = Date.now();
     expect(await cache.getOrFetch("z")).toEqual(undefined);
