@@ -12,9 +12,9 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '14.x'
     checkLatest: true
-  displayName: 'Instal Node 10.x'
+  displayName: 'Instal Node 14.x'
 - task: Npm@1
   inputs:
     command: 'install'
