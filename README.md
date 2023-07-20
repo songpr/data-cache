@@ -89,9 +89,17 @@ Therefore items must be sorted by its prority, which the most important one is t
 
     The key and val can be any type. But using object as key have to same object.
 
-* `del(key)`
+* `delete(key)`
 
     delete the cached data using key.
+
+* `del(key)`
+
+    alias of delete(), delete the cached data using key.
+
+* `clear()`
+
+    clear all cached data.
 
 * `entries()`
 

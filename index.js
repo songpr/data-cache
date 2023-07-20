@@ -234,7 +234,8 @@ class DataCache {
     }
 
     /**
-     * del key from cache.
+     * alias of delele()
+     * delete key from cache.
      * 
      * @param {*} key 
      * @returns 
@@ -243,6 +244,31 @@ class DataCache {
         this._cache.delete(key);
         //remove miss cache too. since we remove key from cache
         if (this._missCache != null) this._missCache.delete(key);
+    }
+
+
+    /**
+    * delele key from cache.
+     * 
+     * @param {*} key 
+     * @returns 
+     */
+    delete(key) {
+        this._cache.delete(key);
+        //remove miss cache too. since we remove key from cache
+        if (this._missCache != null) this._missCache.delete(key);
+    }
+
+    /**
+     * clear all keys from cache.
+     * 
+     * @param {*} key 
+     * @returns 
+     */
+    clear() {
+        this._cache.clear();
+        //clear miss cache too. since we clear keys from cache
+        if (this._missCache != null) this._missCache.clear();
     }
 
     /**
